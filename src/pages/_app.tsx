@@ -1,5 +1,4 @@
 import { AppProps } from "next/app";
-import "../styles/globals.css";
 import { Box, ChakraProvider, Flex } from "@chakra-ui/react";
 import theme from "@src/styles/theme";
 import Header from "@src/components/Header";

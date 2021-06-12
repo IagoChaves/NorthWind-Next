@@ -1,7 +1,18 @@
 import React, { memo } from "react";
-import { Button, Flex, Text } from "@chakra-ui/react";
+import {
+  Center,
+  Divider,
+  Flex,
+  Icon,
+  Stack,
+  Text,
+  Tooltip,
+} from "@chakra-ui/react";
 import Link from "next/link";
+import { RiBarChartLine, RiShoppingCartLine } from "react-icons/ri";
+import { useRouter } from "next/router";
 const Header: React.FC = () => {
+  const router = useRouter();
   return (
     <Flex
       as="header"
@@ -30,7 +41,32 @@ const Header: React.FC = () => {
       </Link>
 
       <Flex align="center" ml="auto">
-        <Button colorScheme="green">Relatório</Button>
+        <Stack direction="row" spacing={["2", "4"]} color="gray.600">
+          {/* <Button colorScheme="green">Relatório</Button> */}
+          <Tooltip hasArrow label="Relatório" placement="top">
+            <span>
+              <Icon
+                as={RiBarChartLine}
+                fontSize="25"
+                cursor="pointer"
+                onClick={() => router.push("#")}
+              />
+            </span>
+          </Tooltip>
+          <Center>
+            <Divider orientation="vertical" />
+          </Center>
+          <Tooltip hasArrow label="Compras gerais" placement="top">
+            <span>
+              <Icon
+                as={RiShoppingCartLine}
+                fontSize="25"
+                cursor="pointer"
+                onClick={() => router.push("/products")}
+              />
+            </span>
+          </Tooltip>
+        </Stack>
       </Flex>
     </Flex>
   );
