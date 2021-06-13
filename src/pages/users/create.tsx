@@ -7,6 +7,7 @@ import {
   Heading,
   HStack,
   SimpleGrid,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
@@ -15,6 +16,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/router";
 import Input from "@src/components/Form/Input/Input";
+import api from "@src/services/api";
 
 type CreateUserFormData = {
   CustomerID: string;
@@ -46,31 +48,34 @@ const createUserFormSchema = yup.object().shape({
 
 const CreateUser: React.FC = () => {
   const router = useRouter();
-  // const createUser = useMutation(
-  //   async (user: CreateUserFormData) => {
-  //     const response = await api.post(ServerRoutes.users(), {
-  //       user: {
-  //         ...user,
-  //         createdAt: new Date(),
-  //       },
-  //     });
-  //     return response.data.user;
-  //   },
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries('users');
-  //     },
-  //   },
-  // );
+  const toast = useToast();
 
   const { formState, register, handleSubmit } = useForm({
     resolver: yupResolver(createUserFormSchema),
   });
-  const { errors } = formState;
+  const { errors, isSubmitting } = formState;
 
-  const handleCreateUser: SubmitHandler<CreateUserFormData> = (values) => {
-    console.log("User to create -> ", values);
-    // router.push(Routes.USERS);
+  const handleCreateUser: SubmitHandler<CreateUserFormData> = async (
+    values
+  ) => {
+    try {
+      await api.post("/customers", values);
+      toast({
+        title: "Usuário criado com sucesso!",
+        status: "success",
+        duration: 6000,
+        isClosable: true,
+      });
+      router.push("/");
+    } catch (e) {
+      toast({
+        title: "Não foi possível criar o usuário.",
+        description: "Já existe um usuário com esse ID, tente outro.",
+        status: "error",
+        duration: 6000,
+        isClosable: true,
+      });
+    }
   };
   return (
     <Box
@@ -151,6 +156,7 @@ const CreateUser: React.FC = () => {
             type="submit"
             // isLoading={formState.isSubmitting}
             colorScheme="pink"
+            isLoading={isSubmitting}
           >
             Salvar
           </Button>

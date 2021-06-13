@@ -1,10 +1,8 @@
 import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
-  Box,
   Button,
   Divider,
   Icon,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -25,108 +23,15 @@ import {
 import {
   RiAddLine,
   RiDeleteBin6Line,
-  RiPencilLine,
   RiShoppingBasket2Line,
 } from "react-icons/ri";
-import NextLink from "next/link";
 import TableComponent, { ColumsProps } from "@src/components/Table";
+import useProducts, { Product as ProductType } from "@src/hooks/useProducts";
 
-const data: ProductType[] = [
-  {
-    id: 10249,
-    CategoryID: "Beverages",
-    ProductName: "Arroz",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10248,
-    CategoryID: "Beverages",
-    ProductName: "Vinho",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10247,
-    CategoryID: "Beverages",
-    ProductName: "Beer",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 1027,
-    CategoryID: "Beverages",
-    ProductName: "Test",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10250,
-    CategoryID: "Fruit",
-    ProductName: "Apple",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10251,
-    CategoryID: "Fruit",
-    ProductName: "Grape",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10252,
-    CategoryID: "Fruit",
-    ProductName: "Orange",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10253,
-    CategoryID: "Fruit",
-    ProductName: "Kiwi",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10254,
-    CategoryID: "Fruit",
-    ProductName: "Banana",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10255,
-    CategoryID: "Fruit",
-    ProductName: "Melon",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-  {
-    id: 10256,
-    CategoryID: "Fruit",
-    ProductName: "Pineapple",
-    UnitPrice: 10,
-    UnitsInStock: 100,
-  },
-];
-
-type ProductType = {
-  id: number;
-  ProductName: string;
-  CategoryID: string;
-  UnitsInStock: number;
-  UnitPrice: number;
-};
-
-type ProductCartType = {
-  id: number;
-  ProductName: string;
-  CategoryID: string;
-  UnitPrice: number;
+interface ProductCartType extends Omit<ProductType, "UnitsInStock"> {
   qtd: number;
   Total: number;
-};
+}
 
 type AddToCartProps = {
   id: number;
@@ -142,11 +47,12 @@ const NewProduct: React.FC = () => {
     [] as AddToCartProps[]
   );
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { data, error, isLoading, mutate } = useProducts(page);
 
   const columns = useMemo<ColumsProps<ProductType>>(() => {
     return [
       { key: "ProductName", title: "PRODUTO" },
-      { key: "CategoryID", title: "CATEGORIA" },
+      { key: "CategoryName", title: "CATEGORIA" },
       {
         key: "id",
         title: "ID DO PRODUTO",
@@ -160,7 +66,7 @@ const NewProduct: React.FC = () => {
   const columnsCart = useMemo<ColumsProps<ProductCartType>>(() => {
     return [
       { key: "ProductName", title: "PRODUTO" },
-      { key: "CategoryID", title: "CATEGORIA" },
+      { key: "CategoryName", title: "CATEGORIA" },
 
       { key: "qtd", title: "QUANTIDADE", isNumeric: true },
       { key: "UnitPrice", title: "PREÇO POR UNIDADE", isNumeric: true },
@@ -186,7 +92,7 @@ const NewProduct: React.FC = () => {
           {
             qtd: qtd + sameProduct.qtd,
             ProductName: product.ProductName,
-            CategoryID: product.CategoryID,
+            CategoryName: product.CategoryName,
             UnitPrice: product.UnitPrice,
             Total: product.UnitPrice * (qtd + sameProduct.qtd),
             id: product.id,
@@ -198,7 +104,7 @@ const NewProduct: React.FC = () => {
         {
           qtd,
           ProductName: product.ProductName,
-          CategoryID: product.CategoryID,
+          CategoryName: product.CategoryName,
           UnitPrice: product.UnitPrice,
           Total: product.UnitPrice * qtd,
           id: product.id,
@@ -236,11 +142,11 @@ const NewProduct: React.FC = () => {
               onPageChange={(NewPage) => {
                 setPage(NewPage);
               }}
-              error={false}
-              isLoading={false}
-              data={data}
+              error={error}
+              isLoading={isLoading}
+              data={data?.products}
               columns={columns}
-              totalCount={data.length}
+              totalCount={data?.totalCount}
               additionalFeature={(product) => {
                 const { UnitsInStock, id } = product;
                 const findProduct = productQtd.find(

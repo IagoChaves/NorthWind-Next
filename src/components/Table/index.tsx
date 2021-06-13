@@ -163,9 +163,11 @@ const TableComponent = <ObjectType extends { id: string | number }>({
             <Tbody>
               {new Array(10).fill(0).map((_i, index) => (
                 <Tr key={`loading-${index}`}>
-                  <Td px={["4", "4", "6"]}>
-                    <Checkbox colorScheme="pink" />
-                  </Td>
+                  {hasCheckbox && (
+                    <Td px={["4", "4", "6"]}>
+                      <Checkbox colorScheme="pink" />
+                    </Td>
+                  )}
                   {columns.map((column) => (
                     <Td key={String(column.key)}>
                       <Skeleton color="gray.800" height="10px" />
@@ -254,7 +256,7 @@ const TableComponent = <ObjectType extends { id: string | number }>({
           <Pagination
             totalCountOfRegister={totalCount}
             currentPage={page}
-            registerPerPage={5}
+            registerPerPage={10}
             onPageChange={handleChangePage}
           />
         </>

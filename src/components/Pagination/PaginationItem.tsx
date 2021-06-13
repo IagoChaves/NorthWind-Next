@@ -12,9 +12,20 @@ const PaginationItem: React.FC<PaginationItemProps> = ({
   onPageChange,
   number,
 }: PaginationItemProps) => {
+  const { colorMode } = useColorMode();
   if (isCurrent) {
     return (
-      <Button size="sm" fontSize="xs" width="4" colorScheme="facebook" disabled>
+      <Button
+        size="sm"
+        fontSize="xs"
+        width="4"
+        colorScheme="facebook"
+        disabled
+        // _disabled={{
+        //   bgColor: colorMode === 'light' ? 'blue.400' : 'pink.500',
+        //   cursor: 'default',
+        // }}
+      >
         {number}
       </Button>
     );
@@ -23,9 +34,12 @@ const PaginationItem: React.FC<PaginationItemProps> = ({
     <Button
       size="sm"
       fontSize="xs"
-      variant="solid"
+      variant={colorMode === "light" ? "solid" : "outline"}
       width="4"
       colorScheme="facebook"
+      // bgColor={colorMode === 'light' ? 'transparent' : 'gray.700'}
+      // _hover={{ bg: colorMode === 'light' ? 'blue.100' : 'gray.500' }}
+      // textColor={colorMode === 'light' ? 'black' : 'white'}
       onClick={() => onPageChange(number)}
     >
       {number}

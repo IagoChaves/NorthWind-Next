@@ -25,7 +25,7 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   registerPerPage,
 }: PaginationProps) => {
-  const lastPage = Math.floor(totalCountOfRegister / registerPerPage);
+  const lastPage = Math.ceil(totalCountOfRegister / registerPerPage);
 
   const previousPages =
     currentPage > 1
@@ -48,8 +48,7 @@ const Pagination: React.FC<PaginationProps> = ({
       spacing="6"
     >
       <Box>
-        <strong>0</strong> - <strong>{registerPerPage}</strong> de{" "}
-        <strong>{totalCountOfRegister}</strong>
+        <strong>0</strong> - <strong>10</strong> de <strong>100</strong>
       </Box>
       <Stack direction="row" spacing="2">
         {currentPage > 1 + siblingsCount && (

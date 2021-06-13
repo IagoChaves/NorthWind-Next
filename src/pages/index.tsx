@@ -8,12 +8,7 @@ import {
   Button,
   Link,
   Text,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  useColorModeValue as mode,
-  Tag,
+  Spinner,
 } from "@chakra-ui/react";
 import {
   RiAddLine,
@@ -23,75 +18,9 @@ import {
 } from "react-icons/ri";
 import NextLink from "next/link";
 import TableComponent, { ColumsProps } from "@src/components/Table";
-
-const data: UsersType[] = [
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "ALFKI",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "ANATR",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "ICHF",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "CHOPS",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "CMMID",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "COMMI",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "BOLID",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "VOLID",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "BERGS",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "AROUT",
-    ContactName: "Anders Foden",
-  },
-  {
-    CompanyName: "Alfreds Futterkiste	",
-    ContactTitle: "Sales Representative",
-    id: "BLAUS",
-    ContactName: "Anders Foden",
-  },
-];
+import useUsers from "@src/hooks/useUsers";
+import api from "@src/services/api";
+import Panel from "@src/components/Panel";
 
 type UsersType = {
   id: string;
@@ -102,7 +31,7 @@ type UsersType = {
 
 const Dashboard: React.FC = () => {
   const [page, setPage] = useState(1);
-
+  const { data, isLoading, error, mutate, revalidate } = useUsers(page);
   const columns = useMemo<ColumsProps<UsersType>>(() => {
     return [
       {
@@ -111,7 +40,7 @@ const Dashboard: React.FC = () => {
         Cell: ({ id, ContactName }: UsersType) => (
           <Box>
             <Link
-              href={`/products/${encodeURIComponent(id)}`}
+              href={`/orders/${encodeURIComponent(id)}`}
               color="purple.400"
               // onMouseEnter={() => handlePrefetchUser(id)}
             >
@@ -131,150 +60,27 @@ const Dashboard: React.FC = () => {
     ];
   }, []);
 
+  const handleOnRemove = useCallback(
+    (id: string) => {
+      api.delete(`/customers/${id}`);
+
+      const updatedUsers = data?.users.filter(
+        (predicate) => predicate.id !== id
+      );
+
+      mutate({ users: updatedUsers, totalCount: data?.totalCount - 1 }, false);
+    },
+    [page, data, mutate]
+  );
   return (
     <Flex w="100%" direction="column">
-      <Box>
-        <div style={{ minWidth: "100px" }}>
-          <Button
-            sx={{
-              borderRadius: "0 3px 3px 0",
-              background: "#FFFFFF",
-              borderLeft: `3px solid blue`,
-              fontWeight: "bold",
-              // padding: "8px 16px",
-              margin: "1em",
-            }}
-          >
-            Top 3 clientes
-          </Button>
-        </div>
-        <Box as="section" p="4" mb={8}>
-          <Box maxW="7xl" mx="auto" px={{ base: "6", md: "8" }}>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-            </SimpleGrid>
-          </Box>
-        </Box>
-      </Box>
-      <Box>
-        <div style={{ minWidth: "100px" }}>
-          <Button
-            sx={{
-              borderRadius: "0 3px 3px 0",
-              background: "#FFFFFF",
-              borderLeft: `3px solid blue`,
-              fontWeight: "bold",
-              // padding: "8px 16px",
-              margin: "1em",
-            }}
-          >
-            Top 3 produtos
-          </Button>
-        </div>
-        <Box as="section" p="4" mb={8}>
-          <Box maxW="7xl" mx="auto" px={{ base: "6", md: "8" }}>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-              <Stat
-                px={{ base: 4, sm: 6 }}
-                py="5"
-                shadow="base"
-                rounded="lg"
-                borderWidth={1}
-                bg="gray.50"
-              >
-                <StatLabel fontWeight="medium" isTruncated color="gray.400">
-                  Label teste
-                </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="medium" color="gray.900">
-                  200,00
-                </StatNumber>
-              </Stat>
-            </SimpleGrid>
-          </Box>
-        </Box>
-      </Box>
+      <Panel />
 
       <Box flex="1" borderWidth={1} boxShadow="lg" borderRadius={8} p="8">
         <Flex mb="8" justify="space-between" align="center">
           <Heading size="lg" fontWeight="normal">
             Usuários
-            {/* {!isLoading && isFetching && (
-            <Spinner size="sm" color="gray.500" ml="4" />
-          )} */}
+            {isLoading && <Spinner size="sm" color="gray.500" ml="4" />}
           </Heading>
           <Stack direction="row">
             <Button
@@ -282,7 +88,7 @@ const Dashboard: React.FC = () => {
               fontSize="sm"
               variant="outline"
               leftIcon={<Icon as={RiArrowGoBackLine} fontSize="20" />}
-              // onClick={() => refetch()}
+              onClick={() => revalidate()}
             >
               Recarregar
             </Button>
@@ -304,11 +110,11 @@ const Dashboard: React.FC = () => {
           onPageChange={(NewPage) => {
             setPage(NewPage);
           }}
-          error={false}
-          isLoading={false}
-          data={data}
+          error={error}
+          isLoading={isLoading}
+          data={data?.users}
           columns={columns}
-          totalCount={data.length}
+          totalCount={data?.totalCount}
           additionalFeature={({ id }: UsersType) => {
             return (
               <Stack direction="row">
@@ -329,6 +135,7 @@ const Dashboard: React.FC = () => {
                   variant="ghost"
                   colorScheme="red"
                   leftIcon={<Icon as={RiDeleteBin6Line} fontSize="16" />}
+                  onClick={() => handleOnRemove(id)}
                 >
                   Remover
                 </Button>

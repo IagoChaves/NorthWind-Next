@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { RiBarChartLine, RiShoppingCartLine } from "react-icons/ri";
+import { RiHome4Line, RiShoppingCartLine } from "react-icons/ri";
 import { useRouter } from "next/router";
 const Header: React.FC = () => {
   const router = useRouter();
@@ -43,26 +43,26 @@ const Header: React.FC = () => {
       <Flex align="center" ml="auto">
         <Stack direction="row" spacing={["2", "4"]} color="gray.600">
           {/* <Button colorScheme="green">Relatório</Button> */}
-          <Tooltip hasArrow label="Relatório" placement="top">
+          <Tooltip hasArrow label="Início" placement="top">
             <span>
               <Icon
-                as={RiBarChartLine}
+                as={RiHome4Line}
                 fontSize="25"
                 cursor="pointer"
-                onClick={() => router.push("#")}
+                onClick={() => router.push("/")}
               />
             </span>
           </Tooltip>
           <Center>
             <Divider orientation="vertical" />
           </Center>
-          <Tooltip hasArrow label="Compras gerais" placement="top">
+          <Tooltip hasArrow label="Todos os pedidos" placement="top">
             <span>
               <Icon
                 as={RiShoppingCartLine}
                 fontSize="25"
                 cursor="pointer"
-                onClick={() => router.push("/products")}
+                onClick={() => router.push("/orders")}
               />
             </span>
           </Tooltip>

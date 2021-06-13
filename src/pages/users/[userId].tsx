@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Box,
   Button,
@@ -19,6 +19,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Input from "@src/components/Form/Input/Input";
 import Link from "next/link";
+import { useUser } from "@src/hooks/useUsers";
+import api from "@src/services/api";
+import { mutate as mutateGlobal } from "swr";
 
 type EditUserFormData = {
   CustomerID: string;
@@ -43,25 +46,34 @@ const updateUserFormSchema = yup.object().shape({
   Region: yup.string().notRequired(),
   PostalCode: yup.number().notRequired(),
   Country: yup.string().notRequired(),
-  Phone: yup.number().notRequired(),
-  Fax: yup.number().notRequired(),
+  Phone: yup.string().notRequired(),
+  Fax: yup.string().notRequired(),
 });
 
 const Profile: React.FC = () => {
   const router = useRouter();
   const { userId } = router.query;
-  // const { data, isLoading, isFetching, error, refetch } = useUser(
-  //   userId as string,
-  // );
+  console.log("UserId", userId);
+  const { data, error, isLoading, mutate } = useUser(userId as string);
 
   const { formState, register, handleSubmit } = useForm({
     resolver: yupResolver(updateUserFormSchema),
   });
-  const { errors } = formState;
+  const { errors, isSubmitting } = formState;
 
-  const handleEditUser: SubmitHandler<EditUserFormData> = (values) => {
-    console.log("User to edit -> ", values);
-  };
+  const handleEditUser: SubmitHandler<EditUserFormData> = useCallback(
+    async (values) => {
+      console.log("User to edit -> ", values);
+
+      mutate({ user: values }, false);
+
+      await api.put(`/customers/${userId}`, values);
+      console.log("revalidating All");
+      mutateGlobal("customers");
+    },
+    []
+  );
+
   return (
     <Box
       as="form"
@@ -107,60 +119,84 @@ const Profile: React.FC = () => {
         </Button>
       </VStack>
 
-      <VStack spacing={8}>
-        <SimpleGrid minChildWidth="240px" spacing={["6", "12"]} w="100%">
-          <Input
-            name="CustomerID"
-            isDisabled
-            defaultValue={userId}
-            label="ID do cliente"
-          />
-          <Input
-            name="CompanyName"
-            label="Nome da empresa"
-            {...register("CompanyName")}
-            error={errors.CompanyName}
-          />
-          <Input
-            name="ContactName"
-            label="Usuário"
-            {...register("ContactName")}
-          />
-          <Input
-            name="ContactTitle"
-            label="Profissão"
-            {...register("ContactTitle")}
-          />
-        </SimpleGrid>
-
-        <SimpleGrid minChildWidth="240px" spacing={["6", "8"]} w="100%">
-          <Input name="Address" label="Endereço" {...register("Address")} />
-          <Input name="City" label="Cidade" {...register("City")} />
-          <Input name="Region" label="Região" {...register("Region")} />
-          <Input
-            name="PostalCode"
-            label="CEP"
-            type="number"
-            defaultValue={0}
-            {...register("PostalCode")}
-          />
-          <Input name="Country" label="País" {...register("Country")} />
-          <Input
-            name="Phone"
-            label="Telefone para contato"
-            type="number"
-            defaultValue={0}
-            {...register("Phone")}
-          />
-          <Input
-            name="Fax"
-            label="Fax"
-            type="number"
-            defaultValue={0}
-            {...register("Fax")}
-          />
-        </SimpleGrid>
-      </VStack>
+      {isLoading ? (
+        <Flex align="center" justify="center">
+          <Spinner size="sm" color="gray.500" ml="4" />
+        </Flex>
+      ) : (
+        <VStack spacing={8}>
+          <SimpleGrid minChildWidth="240px" spacing={["6", "12"]} w="100%">
+            <Input
+              name="CustomerID"
+              isDisabled
+              defaultValue={userId}
+              label="ID do cliente"
+            />
+            <Input
+              name="CompanyName"
+              label="Nome da empresa"
+              defaultValue={data?.user.CompanyName}
+              {...register("CompanyName")}
+              error={errors.CompanyName}
+            />
+            <Input
+              name="ContactName"
+              label="Usuário"
+              defaultValue={data?.user.ContactName}
+              {...register("ContactName")}
+            />
+            <Input
+              name="ContactTitle"
+              label="Profissão"
+              defaultValue={data?.user.ContactTitle}
+              {...register("ContactTitle")}
+            />
+            <Input
+              name="Address"
+              label="Endereço"
+              defaultValue={data?.user.Address}
+              {...register("Address")}
+            />
+            <Input
+              name="City"
+              label="Cidade"
+              defaultValue={data?.user.City}
+              {...register("City")}
+            />
+            <Input
+              name="Region"
+              label="Região"
+              defaultValue={data?.user.Region}
+              {...register("Region")}
+            />
+            <Input
+              name="PostalCode"
+              label="CEP"
+              type="number"
+              defaultValue={data?.user.PostalCode}
+              {...register("PostalCode")}
+            />
+            <Input
+              name="Country"
+              label="País"
+              defaultValue={data?.user.Country}
+              {...register("Country")}
+            />
+            <Input
+              name="Phone"
+              label="Telefone para contato"
+              defaultValue={data?.user.Phone}
+              {...register("Phone")}
+            />
+            <Input
+              name="Fax"
+              label="Fax"
+              defaultValue={data?.user.Fax}
+              {...register("Fax")}
+            />
+          </SimpleGrid>
+        </VStack>
+      )}
 
       <Flex mt={8} justify="flex-end">
         <HStack spacing="4">
@@ -171,6 +207,7 @@ const Profile: React.FC = () => {
             type="submit"
             // isLoading={formState.isSubmitting}
             colorScheme="pink"
+            isLoading={isSubmitting}
           >
             Salvar
           </Button>
