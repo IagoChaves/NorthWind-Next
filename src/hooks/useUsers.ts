@@ -32,13 +32,12 @@ type GetUserResponse = {
 };
 
 async function getUsers(page: number): Promise<GetUsersResponse> {
-  const { data, headers } = await api.get<User[]>("/customers", {
+  const { data, headers } = await api.get<User[]>("/clienteAll", {
     params: {
-      _page: page,
-      _limit: 10,
+      offset: page,
+      limit: 10,
     },
   });
-
   const users = data.map((user) => ({
     id: user.CustomerID,
     ContactName: user.ContactName,
@@ -51,14 +50,17 @@ async function getUsers(page: number): Promise<GetUsersResponse> {
 }
 
 async function getUser(userId: string): Promise<GetUserResponse> {
-  const { data } = await api.get<User>(`/customers/${userId}`);
-
+  const { data } = await api.get<User>("/cliente", {
+    params: {
+      id: userId,
+    },
+  });
   return { user: data };
 }
 
 const useUsers = (page: number) => {
   const { data, mutate, error, revalidate } = useSWR(["customers", page], () =>
-    getUsers(page)
+    getUsers(page - 1)
   );
 
   return { data, mutate, isLoading: !error && !data, error, revalidate };

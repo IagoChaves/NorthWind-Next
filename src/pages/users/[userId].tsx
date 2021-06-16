@@ -11,6 +11,7 @@ import {
   Spinner,
   Icon,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { RiDeleteBinLine, RiAccountCircleFill } from "react-icons/ri";
 import { useRouter } from "next/router";
@@ -51,9 +52,9 @@ const updateUserFormSchema = yup.object().shape({
 });
 
 const Profile: React.FC = () => {
+  const toast = useToast();
   const router = useRouter();
   const { userId } = router.query;
-  console.log("UserId", userId);
   const { data, error, isLoading, mutate } = useUser(userId as string);
 
   const { formState, register, handleSubmit } = useForm({
@@ -63,13 +64,23 @@ const Profile: React.FC = () => {
 
   const handleEditUser: SubmitHandler<EditUserFormData> = useCallback(
     async (values) => {
-      console.log("User to edit -> ", values);
-
       mutate({ user: values }, false);
 
-      await api.put(`/customers/${userId}`, values);
-      console.log("revalidating All");
       mutateGlobal("customers");
+
+      await api.put("/cliente", values, {
+        params: {
+          id: userId,
+        },
+      });
+
+      toast({
+        title: "Usuário alterado com sucesso!",
+        status: "success",
+        duration: 6000,
+        isClosable: true,
+      });
+      router.push("/");
     },
     []
   );

@@ -59,7 +59,10 @@ const CreateUser: React.FC = () => {
     values
   ) => {
     try {
-      await api.post("/customers", values);
+      const response = await api.post("/cliente", values);
+      if (response.data?.ERROR) {
+        throw new Error("Cliente já existe");
+      }
       toast({
         title: "Usuário criado com sucesso!",
         status: "success",

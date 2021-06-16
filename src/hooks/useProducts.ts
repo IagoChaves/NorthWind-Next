@@ -14,49 +14,32 @@ type GetProductsResponse = {
   products: Product[];
 };
 
-async function getProducts(page: number): Promise<GetProductsResponse> {
-  const { data, headers } = await api.get<Product[]>("/products", {
-    params: {
-      _page: page,
-      _limit: 10,
-    },
-  });
+async function getProducts(
+  page: number,
+  availableQueue: boolean
+): Promise<GetProductsResponse> {
+  console.log(availableQueue);
+  if (availableQueue) {
+    const { data, headers } = await api.get<Product[]>("/products", {
+      params: {
+        offset: page,
+        limit: 10,
+      },
+    });
 
-  const totalCount = Number(headers["x-total-count"]);
+    const totalCount = Number(headers["x-total-count"]);
 
-  return { products: data, totalCount };
+    return { products: data, totalCount };
+  }
+  return null;
 }
 
-// async function getOrder(
-//   userId: string,
-//   page: number
-// ): Promise<GetOrdersResponse> {
-//   const { data, headers } = await api.get<Order[]>("/orders", {
-//     params: {
-//       _page: page,
-//       _limit: 10,
-//       CustomerID: userId,
-//     },
-//   });
-//   const totalCount = Number(headers["x-total-count"]);
-
-//   return { orders: data, totalCount };
-// }
-
-const useProducts = (page: number) => {
+const useProducts = (page: number, availableQueue: boolean) => {
   const { data, mutate, error, revalidate } = useSWR(["products", page], () =>
-    getProducts(page)
+    getProducts(page - 1, availableQueue)
   );
 
   return { data, mutate, isLoading: !error && !data, error, revalidate };
 };
 
 export default useProducts;
-
-// export const useOrder = (userId: string, page: number) => {
-//   const { data, mutate, error } = useSWR([`order${page}`, userId], () =>
-//     getOrder(userId, page)
-//   );
-
-//   return { data, mutate, isLoading: !error && !data, error };
-// };

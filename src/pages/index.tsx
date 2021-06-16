@@ -62,7 +62,11 @@ const Dashboard: React.FC = () => {
 
   const handleOnRemove = useCallback(
     (id: string) => {
-      api.delete(`/customers/${id}`);
+      api.delete("/cliente", {
+        params: {
+          id,
+        },
+      });
 
       const updatedUsers = data?.users.filter(
         (predicate) => predicate.id !== id
@@ -74,7 +78,7 @@ const Dashboard: React.FC = () => {
   );
   return (
     <Flex w="100%" direction="column">
-      <Panel />
+      <Panel isThreadAvailable={!!data} />
 
       <Box flex="1" borderWidth={1} boxShadow="lg" borderRadius={8} p="8">
         <Flex mb="8" justify="space-between" align="center">

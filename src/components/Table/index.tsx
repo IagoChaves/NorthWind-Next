@@ -35,6 +35,7 @@ interface TableComponentProps<ObjectType> {
   hasSearch?: boolean;
   totalTd?: boolean;
   message?: string;
+  registersPerPage?: number;
 }
 
 type FiltersProps = {
@@ -59,6 +60,7 @@ const TableComponent = <ObjectType extends { id: string | number }>({
   hasSearch = true,
   totalTd = false,
   message,
+  registersPerPage = 10,
 }: TableComponentProps<ObjectType>): JSX.Element => {
   const [page, setPage] = useState(1);
   const [sortedData, setSortedData] = useState<ObjectType[]>([]);
@@ -256,7 +258,7 @@ const TableComponent = <ObjectType extends { id: string | number }>({
           <Pagination
             totalCountOfRegister={totalCount}
             currentPage={page}
-            registerPerPage={10}
+            registerPerPage={registersPerPage}
             onPageChange={handleChangePage}
           />
         </>

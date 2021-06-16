@@ -26,7 +26,10 @@ import {
   RiShoppingBasket2Line,
 } from "react-icons/ri";
 import TableComponent, { ColumsProps } from "@src/components/Table";
-import useProducts, { Product as ProductType } from "@src/hooks/useProducts";
+import { Product, Product as ProductType } from "@src/hooks/useProducts";
+import Checkout from "../Checkout";
+import { useEffect } from "react";
+import api from "@src/services/api";
 
 interface ProductCartType extends Omit<ProductType, "UnitsInStock"> {
   qtd: number;
@@ -38,8 +41,34 @@ type AddToCartProps = {
   qtd: number;
 };
 
-const NewProduct: React.FC = () => {
+type NewProductProps = {
+  isThreadAvailable: boolean;
+  user: string;
+};
+
+type RefProps = {
+  onOpen: () => void;
+};
+
+export type TriggerProps = {
+  Compras: {
+    City: string;
+    Country: string;
+    ProductName: string;
+    id: number;
+  }[];
+};
+
+const NewProduct: React.FC<NewProductProps> = ({
+  isThreadAvailable,
+  user,
+}: NewProductProps) => {
+  const ref = useRef<RefProps>(null);
+  const [data, setData] = useState<Product[]>();
+  const [totalItens, setTotalItens] = useState(0);
+  const [checkoutProducts, setCheckoutProducts] = useState<TriggerProps>(null);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [total, setTotal] = useState<ProductCartType[]>(
     [] as ProductCartType[]
   );
@@ -47,8 +76,22 @@ const NewProduct: React.FC = () => {
     [] as AddToCartProps[]
   );
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { data, error, isLoading, mutate } = useProducts(page);
 
+  useEffect(() => {
+    if (isThreadAvailable) {
+      api
+        .get<Product[]>("/produtos", {
+          params: {
+            offset: page - 1,
+            limit: 10,
+          },
+        })
+        .then((res) => {
+          setTotalItens(Number(res.headers["x-total-count"]));
+          setData(res.data);
+        });
+    }
+  }, [isThreadAvailable, page]);
   const columns = useMemo<ColumsProps<ProductType>>(() => {
     return [
       { key: "ProductName", title: "PRODUTO" },
@@ -120,6 +163,38 @@ const NewProduct: React.FC = () => {
     });
   }, []);
 
+  const handleCheckout = useCallback(async () => {
+    setIsLoading(true);
+
+    try {
+      const products = {
+        CustomerID: user,
+        OrderDate: String(new Date().toLocaleString("en-US")).replace(",", ""),
+        RequiredDate: "1996-07-04 00:00:00",
+        ShippedDate: "1996-07-04 00:00:00",
+        ShipVia: 3,
+        Freight: 32.38,
+        ShipName: "Victuailles",
+        ShipAddress: "Kirchgasse 6",
+        ShipCity: "Münster",
+        ShipRegion: "re",
+        ShipPostalCode: "44087",
+        ShipCountry: "Germany",
+        Produtos: total.map((product) => ({
+          ProductID: product.id,
+          Quantity: product.qtd,
+          Discount: 0,
+          UnitPrice: product.UnitPrice,
+        })),
+      };
+      const response = await api.post<TriggerProps>("/compras", products);
+      setCheckoutProducts(response.data);
+      ref.current.onOpen();
+    } catch (e) {
+    } finally {
+      setIsLoading(false);
+    }
+  }, [total, user]);
   return (
     <>
       <Button
@@ -142,11 +217,11 @@ const NewProduct: React.FC = () => {
               onPageChange={(NewPage) => {
                 setPage(NewPage);
               }}
-              error={error}
-              isLoading={isLoading}
-              data={data?.products}
+              error={false}
+              isLoading={!data}
+              data={data}
               columns={columns}
-              totalCount={data?.totalCount}
+              totalCount={totalItens}
               additionalFeature={(product) => {
                 const { UnitsInStock, id } = product;
                 const findProduct = productQtd.find(
@@ -231,9 +306,15 @@ const NewProduct: React.FC = () => {
             <Button mr={3} onClick={onClose}>
               Fechar
             </Button>
-            <Button colorScheme="pink" isDisabled={total.length === 0}>
+            <Button
+              colorScheme="pink"
+              isDisabled={total.length === 0}
+              onClick={handleCheckout}
+              isLoading={isLoading}
+            >
               Finalizar compras
             </Button>
+            <Checkout ref={ref} data={checkoutProducts} />
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -5,6 +5,7 @@ export type Order = {
   id: number;
   OrderID: number;
   CustomerID: string;
+  OrderDate: string;
   ProductName: string;
   CategoryName: string;
   Quantity: number;
@@ -17,37 +18,49 @@ type GetOrdersResponse = {
 };
 
 async function getOrders(page: number): Promise<GetOrdersResponse> {
-  const { data, headers } = await api.get<Order[]>("/orders", {
+  const { data, headers } = await api.get<Order[]>("/comprasAll", {
     params: {
-      _page: page,
-      _limit: 10,
+      offset: page,
+      limit: 10,
     },
   });
 
   const totalCount = Number(headers["x-total-count"]);
 
-  return { orders: data, totalCount };
+  const formattedData = data.map((item) => ({
+    ...item,
+    OrderID: Number(item.OrderID),
+    Quantity: Number(item.Quantity),
+    UnitPrice: Number(item.UnitPrice),
+  }));
+  return { orders: formattedData, totalCount };
 }
 
 async function getOrder(
   userId: string,
   page: number
 ): Promise<GetOrdersResponse> {
-  const { data, headers } = await api.get<Order[]>("/orders", {
+  const { data, headers } = await api.get<Order[]>("/compras", {
     params: {
-      _page: page,
-      _limit: 10,
-      CustomerID: userId,
+      offset: page,
+      limit: 10,
+      id: userId,
     },
   });
   const totalCount = Number(headers["x-total-count"]);
 
-  return { orders: data, totalCount };
+  const formattedData = data.map((item) => ({
+    ...item,
+    OrderID: Number(item.OrderID),
+    Quantity: Number(item.Quantity),
+    UnitPrice: Number(item.UnitPrice),
+  }));
+  return { orders: formattedData, totalCount };
 }
 
 const useOrders = (page: number) => {
   const { data, mutate, error, revalidate } = useSWR(["orders", page], () =>
-    getOrders(page)
+    getOrders(page - 1)
   );
 
   return { data, mutate, isLoading: !error && !data, error, revalidate };
@@ -57,7 +70,7 @@ export default useOrders;
 
 export const useOrder = (userId: string, page: number) => {
   const { data, mutate, error } = useSWR([`order${page}`, userId], () =>
-    getOrder(userId, page)
+    getOrder(userId, page - 1)
   );
 
   return { data, mutate, isLoading: !error && !data, error };

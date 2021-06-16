@@ -34,7 +34,7 @@ const UserProducts: React.FC = () => {
           {isLoading && <Spinner size="sm" color="gray.500" ml="4" />}
         </Heading>
         <Stack direction="row">
-          <NewProduct />
+          <NewProduct isThreadAvailable={!!data} user={userId as string} />
         </Stack>
       </Flex>
 
